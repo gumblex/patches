@@ -1,0 +1,68 @@
+diff --git a/shadowsocks/common.py b/shadowsocks/common.py
+index db4beea..1ca88ed 100644
+--- a/shadowsocks/common.py
++++ b/shadowsocks/common.py
+@@ -151,6 +151,7 @@ def parse_header(data):
+             header_length = 7
+         else:
+             logging.warn('header is too short')
++            return None
+     elif addrtype == ADDRTYPE_HOST:
+         if len(data) > 2:
+             addrlen = ord(data[1])
+@@ -161,8 +162,10 @@ def parse_header(data):
+                 header_length = 4 + addrlen
+             else:
+                 logging.warn('header is too short')
++                return None
+         else:
+             logging.warn('header is too short')
++            return None
+     elif addrtype == ADDRTYPE_IPV6:
+         if len(data) >= 19:
+             dest_addr = socket.inet_ntop(socket.AF_INET6, data[1:17])
+@@ -170,9 +173,11 @@ def parse_header(data):
+             header_length = 19
+         else:
+             logging.warn('header is too short')
++            return None
+     else:
+         logging.warn('unsupported addrtype %d, maybe wrong password or '
+                      'encryption method' % addrtype)
++        return None
+     if dest_addr is None:
+         return None
+     return addrtype, to_bytes(dest_addr), dest_port, header_length
+diff --git a/shadowsocks/crypto/openssl.py b/shadowsocks/crypto/openssl.py
+index 3775b6c..2f50601 100644
+--- a/shadowsocks/crypto/openssl.py
++++ b/shadowsocks/crypto/openssl.py
+@@ -49,7 +49,6 @@ def load_openssl():
+     libcrypto.EVP_CipherUpdate.argtypes = (c_void_p, c_void_p, c_void_p,
+                                            c_char_p, c_int)
+ 
+-    libcrypto.EVP_CIPHER_CTX_cleanup.argtypes = (c_void_p,)
+     libcrypto.EVP_CIPHER_CTX_free.argtypes = (c_void_p,)
+     if hasattr(libcrypto, 'OpenSSL_add_all_ciphers'):
+         libcrypto.OpenSSL_add_all_ciphers()
+@@ -108,7 +107,6 @@ class OpenSSLCrypto(object):
+ 
+     def clean(self):
+         if self._ctx:
+-            libcrypto.EVP_CIPHER_CTX_cleanup(self._ctx)
+             libcrypto.EVP_CIPHER_CTX_free(self._ctx)
+ 
+ 
+diff --git a/shadowsocks/encrypt.py b/shadowsocks/encrypt.py
+index 4e87f41..79ceaa6 100644
+--- a/shadowsocks/encrypt.py
++++ b/shadowsocks/encrypt.py
+@@ -122,6 +122,8 @@ class Encryptor(object):
+             return buf
+         if self.decipher is None:
+             decipher_iv_len = self._method_info[1]
++            if len(buf) < decipher_iv_len:
++                return b''
+             decipher_iv = buf[:decipher_iv_len]
+             self.decipher = self.get_cipher(self.key, self.method, 0,
+                                             iv=decipher_iv)
