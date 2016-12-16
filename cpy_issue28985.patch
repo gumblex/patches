@@ -1,0 +1,23 @@
+diff -r 0b78a8c35357 Modules/_sqlite/module.c
+--- a/Modules/_sqlite/module.c	Thu Dec 15 18:58:35 2016 -0500
++++ b/Modules/_sqlite/module.c	Fri Dec 16 11:24:12 2016 +0800
+@@ -303,6 +303,19 @@
+ #if SQLITE_VERSION_NUMBER >= 3003000
+     {"SQLITE_ANALYZE", SQLITE_ANALYZE},
+ #endif
++#if SQLITE_VERSION_NUMBER >= 3003007
++    {"SQLITE_CREATE_VTABLE", SQLITE_CREATE_VTABLE},
++    {"SQLITE_DROP_VTABLE", SQLITE_DROP_VTABLE},
++#endif
++#if SQLITE_VERSION_NUMBER >= 3003008
++    {"SQLITE_FUNCTION", SQLITE_FUNCTION},
++#endif
++#if SQLITE_VERSION_NUMBER >= 3006008
++    {"SQLITE_SAVEPOINT", SQLITE_SAVEPOINT},
++#endif
++#if SQLITE_VERSION_NUMBER >= 3008003
++    {"SQLITE_RECURSIVE", SQLITE_RECURSIVE},
++#endif
+     {(char*)NULL, 0}
+ };
+ 
